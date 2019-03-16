@@ -1,12 +1,52 @@
 # docker-build-library
 Jenkins shared library docker build implementation
 
-## Setup
+## Setup and requirements
+
+### 1. Setup as shared library
 
 Setup the jenkins shared library using Jenkins configuration interfaces. [Reference](https://jenkins.io/doc/book/pipeline/shared-libraries/)
 
+### 2. Agent with docker client CLI
+
+The specified agent should have a `docker client` as a `docker` command. If running inside a container, it should attach the `docker.sock ` so that the host's `dockerd` is reachable.
+
+### 3. sh DSL
+
+Under the hood, the `Build` uses Jenkins `sh` DSL to execute all the build commands. For this reason, this library is only compatible with Linux/Unix systems, but it should be easily fixed to support other operating systems.
+
+## TL; DR
+
+Using the [Kubernetes plugin](<https://github.com/jenkinsci/kubernetes-plugin>) a `docker` label agent can be created with the docker client library
+
+```
+@Library('dockerbuild') _
+
+node('docker') {
+    git url: 'https://github.com/alauda/tasks-gateway'
+    container('docker') {
+        def image = dockerBuild.setup(
+            "index.alauda.cn/alauda/tasks-gateway",
+            "latest",
+            "Dockerfile",
+            ".",
+            "alauda-credentials",
+            1,
+        )
+        image.build().push()
+        def imageUrl = image.getImage()
+        echo "${imageUrl}"
+    }
+}
+
+```
+
+
+
 
 ## DSL
+
+### dockerBuild.setup(String *address* = "index.alauda.cn", String *tag* = "latest", String *dockerfilePath* = "Dockerfile", String *context* = ".", String *credentialsId* = "", int *retryTimes* = 2)
 
 `dockerBuild.setup` method is the entrypoint for the initiate a `Build` instance.
 
@@ -61,13 +101,9 @@ node('docker') {
 
 
 
-Warning: Under the hood, the `Build` uses Jenkins `sh` DSL to execute all the build commands. For this reason, this library is only compatible with Linux/Unix systems.
-
-
-
 ## Build object
 
-`dockerBuild.setup` only initiates the `Build` object. The Build object contains the following methods that can be used:
+`dockerBuild.setup` only initiates the `Build` object. Most methods will `return this`  which makes it convenient to chain calls of different methods. The full list of methods is described bellow:
 
 ### setArg(String *name*, String *value*)
 
@@ -128,7 +164,7 @@ Returns: `Build` object
 
 
 
-#### login()
+### login()
 
 Executes docker login if a credential ID is given and not-yet logged in. Although this method is accessible, it is not necessary to explicitly call it as all commands that require login will execute this method implicitly.
 

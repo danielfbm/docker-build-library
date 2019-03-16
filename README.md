@@ -48,9 +48,9 @@ node('docker') {
 
 ### dockerBuild.setup(String *address* = "index.alauda.cn", String *tag* = "latest", String *dockerfilePath* = "Dockerfile", String *context* = ".", String *credentialsId* = "", int *retryTimes* = 2)
 
-`dockerBuild.setup` method is the entrypoint for the initiate a `Build` instance.
+`dockerBuild.setup` method is the entrypoint to initiate a `Build` instance.
 
-The `setup` method has the following parameters. As:
+The `setup` method has the following parameters:
 
 | parameter      | description                                                  | Type   | default value     |
 | -------------- | ------------------------------------------------------------ | ------ | ----------------- |
